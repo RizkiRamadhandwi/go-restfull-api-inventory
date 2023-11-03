@@ -3,7 +3,8 @@
 
 Aplikasi Inventory adalah aplikasi berbasis API yang dirancang untuk membantu Anda mengelola transaksi.
 
-Dokumentasi : 
+
+Dokumentasi : https://docs.google.com/document/d/15gQR2mLqlGSZEMVkUoiZfXNk4fFIZvg2mYLq5d8qFFY/edit?usp=sharing
 
 
 ## Daftar Isi
@@ -27,11 +28,10 @@ Aplikasi ini tidak memerlukan instalasi khusus. Pastikan Anda telah menginstal G
 
 Setelah menjalankan aplikasi, Anda akan melihat menu utama dengan beberapa pilihan. Pilihan ini akan membantu Anda mengakses fitur-fitur utama aplikasi:
 
-- **Customer**: Melihat, menambah, mengedit, dan menghapus data customer.
-- **Karyawan**: Melihat, menambah, mengedit, dan menghapus data Karyawan.
-- **Layanan**: Melihat, menambah, mengedit, dan menghapus data layanan.
-- **Transaksi**: Melihat dan menambah data transaksi.
-- **Keluar**: Keluar dari aplikasi.
+- **Customer**: Melihat, menambah, mengedit, dan menghapus data customer serta dapat mencari data berdasarkan nama customer.
+- **Karyawan**: Melihat, menambah, mengedit, dan menghapus data Karyawan serta dapat mencari data berdasarkan nama Karyawan.
+- **Produk**: Melihat, menambah, mengedit, dan menghapus data produk serta dapat mencari data berdasarkan nama produk.
+- **Transaksi**: Melihat dan menambah data transaksi serta dapat mencari data berdasarkan nama produk dan rentan tanggal dari transaksi.
 
 ## Validasi Input
 
