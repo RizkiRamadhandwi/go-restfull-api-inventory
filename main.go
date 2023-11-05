@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"go-restfull-api-inventory/config"
@@ -14,6 +15,8 @@ import (
 )
 
 var db = config.ConnectDB()
+
+var ctx = context.Background()
 
 func main() {
 
@@ -70,9 +73,9 @@ func getAllCustomers(c *gin.Context) {
 	if name != "" {
 		query += " WHERE name ILIKE '%'|| $1 || '%'"
 
-		rows, err = db.Query(query+order, name)
+		rows, err = db.QueryContext(ctx, query+order, name)
 	} else {
-		rows, err = db.Query(query + order)
+		rows, err = db.QueryContext(ctx, query+order)
 	}
 
 	if err != nil {
@@ -110,7 +113,7 @@ func getCustomerById(c *gin.Context) {
 	query := "SELECT * FROM Customer WHERE id = $1;"
 	var cust entity.Customer
 
-	err := db.QueryRow(query, custId).Scan(&cust.Id, &cust.Name, &cust.Phone, &cust.Address)
+	err := db.QueryRowContext(ctx, query, custId).Scan(&cust.Id, &cust.Name, &cust.Phone, &cust.Address)
 
 	// validasi 2 customer = jika id yg diinput tidak ada
 	if err != nil {
@@ -132,7 +135,7 @@ func createCustomer(c *gin.Context) {
 
 	// Menghitung ID berikutnya
 	var lastID string
-	err = db.QueryRow("SELECT id FROM Customer ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
+	err = db.QueryRowContext(ctx, "SELECT id FROM Customer ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			c.JSON(http.StatusInternalServerError, gin.H{"err1": err.Error()})
@@ -154,7 +157,7 @@ func createCustomer(c *gin.Context) {
 	newCustomer.Id = nextID
 
 	query := "INSERT INTO Customer(id, name, phoneNumber, address) VALUES ($1, $2, $3, $4);"
-	_, err = db.Exec(query, newCustomer.Id, newCustomer.Name, newCustomer.Phone, newCustomer.Address)
+	_, err = db.ExecContext(ctx, query, newCustomer.Id, newCustomer.Name, newCustomer.Phone, newCustomer.Address)
 
 	// validasi 3 customer = jika ada kesalahan input
 	if err != nil {
@@ -178,7 +181,7 @@ func updateCustById(c *gin.Context) {
 	}
 
 	query := "UPDATE Customer SET name = $1, phoneNumber = $2, address = $3 WHERE id = $4;"
-	result, err := db.Exec(query, updatedCust.Name, updatedCust.Phone, updatedCust.Address, custId)
+	result, err := db.ExecContext(ctx, query, updatedCust.Name, updatedCust.Phone, updatedCust.Address, custId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -200,7 +203,7 @@ func deleteCustById(c *gin.Context) {
 	custId = strings.ToUpper(custId)
 
 	query := "DELETE FROM Customer WHERE id = $1;"
-	result, err := db.Exec(query, custId)
+	result, err := db.ExecContext(ctx, query, custId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -267,7 +270,7 @@ func getEmployeeById(c *gin.Context) {
 	query := "SELECT * FROM Employee WHERE id = $1;"
 	var employed entity.Employee
 
-	err := db.QueryRow(query, employeeId).Scan(&employed.Id, &employed.Name, &employed.Phone, &employed.Address)
+	err := db.QueryRowContext(ctx, query, employeeId).Scan(&employed.Id, &employed.Name, &employed.Phone, &employed.Address)
 
 	// validasi 2 Employee = jika id yg diinput tidak ada
 	if err != nil {
@@ -289,7 +292,7 @@ func createEmployee(c *gin.Context) {
 
 	// Menghitung ID berikutnya
 	var lastID string
-	err = db.QueryRow("SELECT id FROM Employee ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
+	err = db.QueryRowContext(ctx, "SELECT id FROM Employee ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			c.JSON(http.StatusInternalServerError, gin.H{"err1": err.Error()})
@@ -311,7 +314,7 @@ func createEmployee(c *gin.Context) {
 	newEmployee.Id = nextID
 
 	query := "INSERT INTO Employee(id, name, phoneNumber, address) VALUES ($1, $2, $3, $4);"
-	_, err = db.Exec(query, newEmployee.Id, newEmployee.Name, newEmployee.Phone, newEmployee.Address)
+	_, err = db.ExecContext(ctx, query, newEmployee.Id, newEmployee.Name, newEmployee.Phone, newEmployee.Address)
 
 	// validasi 3 employee = jika ada kesalahan input
 	if err != nil {
@@ -335,7 +338,7 @@ func updateEmployeeById(c *gin.Context) {
 	}
 
 	query := "UPDATE Employee SET name = $1, phoneNumber = $2, address = $3 WHERE id = $4;"
-	result, err := db.Exec(query, updatedEmploye.Name, updatedEmploye.Phone, updatedEmploye.Address, employeeId)
+	result, err := db.ExecContext(ctx, query, updatedEmploye.Name, updatedEmploye.Phone, updatedEmploye.Address, employeeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -357,7 +360,7 @@ func deleteEmployeeById(c *gin.Context) {
 	employeeId = strings.ToUpper(employeeId)
 
 	query := "DELETE FROM Employee WHERE id = $1;"
-	result, err := db.Exec(query, employeeId)
+	result, err := db.ExecContext(ctx, query, employeeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -424,7 +427,7 @@ func getProductById(c *gin.Context) {
 	query := "SELECT * FROM Product WHERE id = $1;"
 	var product entity.Product
 
-	err := db.QueryRow(query, productId).Scan(&product.Id, &product.Name, &product.Price, &product.Unit)
+	err := db.QueryRowContext(ctx, query, productId).Scan(&product.Id, &product.Name, &product.Price, &product.Unit)
 
 	// validasi 2 Product = jika id yg diinput tidak ada
 	if err != nil {
@@ -446,7 +449,7 @@ func createProduct(c *gin.Context) {
 
 	// Menghitung ID berikutnya
 	var lastID string
-	err = db.QueryRow("SELECT id FROM Product ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
+	err = db.QueryRowContext(ctx, "SELECT id FROM Product ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1;").Scan(&lastID)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			c.JSON(http.StatusInternalServerError, gin.H{"err1": err.Error()})
@@ -468,7 +471,7 @@ func createProduct(c *gin.Context) {
 	newProduct.Id = nextID
 
 	query := "INSERT INTO Product(id, name, price, unit) VALUES ($1, $2, $3, $4);"
-	_, err = db.Exec(query, newProduct.Id, newProduct.Name, newProduct.Price, newProduct.Unit)
+	_, err = db.ExecContext(ctx, query, newProduct.Id, newProduct.Name, newProduct.Price, newProduct.Unit)
 
 	// validasi 3 Product = jika ada kesalahan input
 	if err != nil {
@@ -492,7 +495,7 @@ func updateProductById(c *gin.Context) {
 	}
 
 	query := "UPDATE Product SET name = $1, price = $2, unit = $3 WHERE id = $4;"
-	result, err := db.Exec(query, updatedProduct.Name, updatedProduct.Price, updatedProduct.Unit, productId)
+	result, err := db.ExecContext(ctx, query, updatedProduct.Name, updatedProduct.Price, updatedProduct.Unit, productId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -514,7 +517,7 @@ func deleteProductById(c *gin.Context) {
 	productId = strings.ToUpper(productId)
 
 	query := "DELETE FROM Product WHERE id = $1;"
-	result, err := db.Exec(query, productId)
+	result, err := db.ExecContext(ctx, query, productId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
@@ -582,14 +585,14 @@ func getAllTransaction(c *gin.Context) {
 		}
 
 		queryEmplo := "SELECT * FROM Employee WHERE id = $1;"
-		err = db.QueryRow(queryEmplo, bill.EmployeeId).Scan(&bill.Employee.Id, &bill.Employee.Name, &bill.Employee.Phone, &bill.Employee.Address)
+		err = db.QueryRowContext(ctx, queryEmplo, bill.EmployeeId).Scan(&bill.Employee.Id, &bill.Employee.Name, &bill.Employee.Phone, &bill.Employee.Address)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Employee not found"})
 			panic(err)
 		}
 
 		queryCust := "SELECT * FROM Customer WHERE id = $1;"
-		err = db.QueryRow(queryCust, bill.CustomerId).Scan(&bill.Customer.Id, &bill.Customer.Name, &bill.Customer.Phone, &bill.Customer.Address)
+		err = db.QueryRowContext(ctx, queryCust, bill.CustomerId).Scan(&bill.Customer.Id, &bill.Customer.Name, &bill.Customer.Phone, &bill.Customer.Address)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 			return
@@ -611,7 +614,7 @@ func getAllTransaction(c *gin.Context) {
 				return
 			}
 			queryProd := "SELECT * FROM Product WHERE id = $1;"
-			err = db.QueryRow(queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
+			err = db.QueryRowContext(ctx, queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 				return
@@ -641,7 +644,7 @@ func getTransactionById(c *gin.Context) {
 	query := "SELECT * FROM Bill WHERE id = $1;"
 	var bill entity.Bill
 
-	err := db.QueryRow(query, billId).Scan(&bill.Id, &bill.BillDate, &bill.EntryDate, &bill.FinishDate, &bill.EmployeeId, &bill.CustomerId, &bill.TotalBill)
+	err := db.QueryRowContext(ctx, query, billId).Scan(&bill.Id, &bill.BillDate, &bill.EntryDate, &bill.FinishDate, &bill.EmployeeId, &bill.CustomerId, &bill.TotalBill)
 
 	// validasi 2 transaksi = jika id tidak ada
 	if err != nil {
@@ -650,14 +653,14 @@ func getTransactionById(c *gin.Context) {
 	}
 
 	queryEmplo := "SELECT * FROM Employee WHERE id = $1;"
-	err = db.QueryRow(queryEmplo, bill.EmployeeId).Scan(&bill.Employee.Id, &bill.Employee.Name, &bill.Employee.Phone, &bill.Employee.Address)
+	err = db.QueryRowContext(ctx, queryEmplo, bill.EmployeeId).Scan(&bill.Employee.Id, &bill.Employee.Name, &bill.Employee.Phone, &bill.Employee.Address)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Employee not found"})
 		panic(err)
 	}
 
 	queryCust := "SELECT * FROM Customer WHERE id = $1;"
-	err = db.QueryRow(queryCust, bill.CustomerId).Scan(&bill.Customer.Id, &bill.Customer.Name, &bill.Customer.Phone, &bill.Customer.Address)
+	err = db.QueryRowContext(ctx, queryCust, bill.CustomerId).Scan(&bill.Customer.Id, &bill.Customer.Name, &bill.Customer.Phone, &bill.Customer.Address)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 		return
@@ -680,7 +683,7 @@ func getTransactionById(c *gin.Context) {
 			return
 		}
 		queryProd := "SELECT * FROM Product WHERE id = $1;"
-		err = db.QueryRow(queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
+		err = db.QueryRowContext(ctx, queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 			return
@@ -705,7 +708,7 @@ func createTransaction(c *gin.Context) {
 	}
 
 	var lastID string
-	err = db.QueryRow("SELECT id FROM Bill ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1").Scan(&lastID)
+	err = db.QueryRowContext(ctx, "SELECT id FROM Bill ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1").Scan(&lastID)
 	if err != nil && err != sql.ErrNoRows {
 		panic(err)
 	}
@@ -725,7 +728,7 @@ func createTransaction(c *gin.Context) {
 	newBill.FinishDate = formatDate(newBill.FinishDate)
 
 	query := "INSERT INTO Bill(id, billDate, entryDate, finishDate, employeeId, customerId, totalBill) VALUES ($1, $2, $3, $4, $5, $6, $7);"
-	_, err = db.Exec(query, newBill.Id, newBill.BillDate, newBill.EntryDate, newBill.FinishDate, newBill.EmployeeId, newBill.CustomerId, newBill.TotalBill)
+	_, err = db.ExecContext(ctx, query, newBill.Id, newBill.BillDate, newBill.EntryDate, newBill.FinishDate, newBill.EmployeeId, newBill.CustomerId, newBill.TotalBill)
 
 	// validasi 3 transaksi = jika ada kesalahan input
 	if err != nil {
@@ -734,14 +737,14 @@ func createTransaction(c *gin.Context) {
 	}
 
 	queryEmplo := "SELECT * FROM Employee WHERE id = $1;"
-	err = db.QueryRow(queryEmplo, newBill.EmployeeId).Scan(&newBill.Employee.Id, &newBill.Employee.Name, &newBill.Employee.Phone, &newBill.Employee.Address)
+	err = db.QueryRowContext(ctx, queryEmplo, newBill.EmployeeId).Scan(&newBill.Employee.Id, &newBill.Employee.Name, &newBill.Employee.Phone, &newBill.Employee.Address)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Employee not found"})
 		return
 	}
 
 	queryCust := "SELECT * FROM Customer WHERE id = $1;"
-	err = db.QueryRow(queryCust, newBill.CustomerId).Scan(&newBill.Customer.Id, &newBill.Customer.Name, &newBill.Customer.Phone, &newBill.Customer.Address)
+	err = db.QueryRowContext(ctx, queryCust, newBill.CustomerId).Scan(&newBill.Customer.Id, &newBill.Customer.Name, &newBill.Customer.Phone, &newBill.Customer.Address)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 		return
@@ -751,7 +754,7 @@ func createTransaction(c *gin.Context) {
 		fmt.Println("0")
 		for _, billDetail := range newBill.Bills {
 			var lastIDdetail string
-			err = db.QueryRow("SELECT id FROM BillDetail ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1").Scan(&lastIDdetail)
+			err = db.QueryRowContext(ctx, "SELECT id FROM BillDetail ORDER BY SUBSTRING(id FROM 2)::integer DESC, id DESC LIMIT 1").Scan(&lastIDdetail)
 			if err != nil && err != sql.ErrNoRows {
 				panic(err)
 			}
@@ -790,7 +793,7 @@ func createTransaction(c *gin.Context) {
 			return
 		}
 		queryProd := "SELECT * FROM Product WHERE id = $1;"
-		err = db.QueryRow(queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
+		err = db.QueryRowContext(ctx, queryProd, detail.ProductId).Scan(&detail.Product.Id, &detail.Product.Name, &detail.Product.Price, &detail.Product.Unit)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found"})
 			return
@@ -835,14 +838,14 @@ func validate(err error, tx *sql.Tx) {
 
 func insertBillDetail(billDetail entity.BillDetails, tx *sql.Tx) {
 	sqlStatement := "INSERT INTO BillDetail(id, billId, productId, qty) VALUES ($1, $2, $3, $4);"
-	_, err := tx.Exec(sqlStatement, billDetail.Id, billDetail.BillId, billDetail.ProductId, billDetail.Qty)
+	_, err := tx.ExecContext(ctx, sqlStatement, billDetail.Id, billDetail.BillId, billDetail.ProductId, billDetail.Qty)
 	validate(err, tx)
 }
 
 func getTotal(id string, tx *sql.Tx) int {
 	sqlStatement := "SELECT SUM(p.price * d.qty) AS sub_total FROM BillDetail AS d JOIN Product AS p ON d.productId = p.id WHERE d.billId = $1;"
 	total := 0
-	err := tx.QueryRow(sqlStatement, id).Scan(&total)
+	err := tx.QueryRowContext(ctx, sqlStatement, id).Scan(&total)
 	validate(err, tx)
 	return total
 }
@@ -851,6 +854,6 @@ func updateTotal(total int, customerId string, tx *sql.Tx) {
 
 	sqlStatement := "UPDATE Bill SET totalBill = $1 WHERE id = $2;"
 
-	_, err := tx.Exec(sqlStatement, total, customerId)
+	_, err := tx.ExecContext(ctx, sqlStatement, total, customerId)
 	validate(err, tx)
 }

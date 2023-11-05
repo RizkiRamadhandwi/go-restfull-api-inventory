@@ -3,6 +3,7 @@ package config
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -29,7 +30,10 @@ func ConnectDB() *sql.DB {
 		panic(err)
 	}
 
-	// fmt.Println("connected database")
+	db.SetMaxIdleConns(10)                  // jumlah koneksi minimal yang dibuat
+	db.SetMaxOpenConns(100)                 // jumlah koneksi maksimal yang dibuat
+	db.SetConnMaxIdleTime(5 * time.Minute)  // berapa lama koneksi yang sudah tidak digunakan akan dihapus
+	db.SetConnMaxLifetime(60 * time.Minute) // berapa lama koneksi boleh digunakan
 
 	return db
 

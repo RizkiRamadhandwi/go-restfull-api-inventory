@@ -1,17 +1,19 @@
 package entity
 
+import "database/sql"
+
 type Customer struct {
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	Phone   string `json:"phoneNumber"`
-	Address string `json:"address"`
+	Id      string         `json:"id"`
+	Name    string         `json:"name"`
+	Phone   sql.NullString `json:"phoneNumber"`
+	Address sql.NullString `json:"address"`
 }
 
 type Employee struct {
-	Id      string `json:"id"`
-	Name    string `json:"name"`
-	Phone   string `json:"phoneNumber"`
-	Address string `json:"address"`
+	Id      string         `json:"id"`
+	Name    string         `json:"name"`
+	Phone   sql.NullString `json:"phoneNumber"`
+	Address sql.NullString `json:"address"`
 }
 
 type Product struct {
